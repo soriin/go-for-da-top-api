@@ -1,0 +1,23 @@
+{
+  "name": "go-for-da-top-api",
+  "version": "0.0.1",
+  "description": "API for Go For Da Top website",
+  "main": "app/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soriin/go-for-da-top-api.git"
+  },
+  "author": "Elliot Fisher",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/soriin/go-for-da-top-api/issues"
+  },
+  "homepage": "https://github.com/soriin/go-for-da-top-api#readme",
+  "dependencies": {
+    "express": "^4.15.3"
+  }
+}
