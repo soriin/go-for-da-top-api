@@ -1,23 +1,45 @@
 {
-  "name": "go-for-da-top-api",
-  "version": "0.0.1",
-  "description": "API for Go For Da Top website",
-  "main": "app/index.js",
+  "name": "gfdt-api",
+  "version": "1.0.0",
+  "description": "Go For Da Top - API",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app/index.js"
+    "debug": "node --inspect server/index.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/soriin/go-for-da-top-api.git"
   },
+  "keywords": [
+    "ddr",
+    "dance",
+    "revolution",
+    "go",
+    "fo",
+    "da",
+    "the",
+    "top"
+  ],
   "author": "Elliot Fisher",
-  "license": "UNLICENSED",
+  "license": "ISC",
   "bugs": {
     "url": "https://github.com/soriin/go-for-da-top-api/issues"
   },
   "homepage": "https://github.com/soriin/go-for-da-top-api#readme",
+  "devDependencies": {
+    "express": "^4.15.4"
+  },
   "dependencies": {
-    "express": "^4.15.3"
+    "body-parser": "^1.17.2",
+    "connect-ensure-login": "^0.1.1",
+    "cookie-parser": "^1.4.3",
+    "cors": "^2.8.4",
+    "express-session": "^1.15.5",
+    "helmet": "^3.8.1",
+    "mongoose": "^4.11.6",
+    "morgan": "^1.8.2",
+    "passport": "^0.3.2",
+    "passport-facebook": "^2.1.1"
   }
 }
