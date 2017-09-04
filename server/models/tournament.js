@@ -19,10 +19,7 @@ var tournamentSchema = mongoose.Schema({
     type: Boolean,
     default: true
   },
-  maxEntrants: {
-    type: Number,
-    default: 0
-  },
+  entrants: [ObjectId],
 });
 
 module.exports = mongoose.model('Tournament', tournamentSchema);

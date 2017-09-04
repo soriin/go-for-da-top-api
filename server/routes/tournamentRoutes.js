@@ -3,6 +3,6 @@ const tournamentController = require('../controllers/tournaments')
 
 router.get('/', ...tournamentController.getTournamentsHandler)
 router.post('/', ...tournamentController.createTournamentHandler)
-router.post('/', ...tournamentController.joinTournamentHandler)
+router.post('/:id/entrant', ...tournamentController.joinTournamentHandler)
 
 module.exports = router
