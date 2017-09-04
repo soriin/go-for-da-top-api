@@ -2,14 +2,14 @@ const Tournament = require('../models/tournament')
 const moment = require('moment')
 
 const getTournamentsHandler = [
-  async function getTournamentsHandler(req, res) {
+  async function getTournamentsFunc(req, res) {
     const tournaments = await Tournament.find({ isActive: true })
     res.send(tournaments)
   }
 ]
 
 const createTournamentHandler = [
-  async function createTournamentHandler(req, res) {
+  async function createTournamentFunc(req, res) {
     try {
       console.log('creating tournament', req.body)
       const body = req.body
@@ -24,7 +24,23 @@ const createTournamentHandler = [
       res.send(savedTournament)
     } catch (e) {
       console.error(e)
-      res.status(500).send({error: 'failed to create tournament'})
+      res.status(500).send({error: 'unable to create tournament'})
+    }
+  }
+]
+
+const joinTournamentHandler = [
+  async function joinTournamentFunc(req, res) {
+    try {
+      console.log('joining tournament', req.body)
+      const body = req.body
+      const tournamentId = body.tournamentId
+      const userId = res.locals.user._id
+
+      const tournament = await Tournament.find({_id: tournamentId})
+    } catch (e) {
+      console.error(e)
+      res.status(500).send({error: 'unable to join tournament'})
     }
   }
 ]
