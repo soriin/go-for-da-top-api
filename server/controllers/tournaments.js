@@ -44,10 +44,32 @@ const joinTournamentHandler = [
       }
       tournament.entrants.push(userId)
       const savedTournament = await tournament.save()
-      res.send(savedTournament)
+      res.send({tournamentId: savedTournament._id, userId: userId})
     } catch (e) {
       console.error(e)
       res.status(500).send({ error: 'unable to join tournament' })
+    }
+  }
+]
+
+const leaveTournamentHandler = [
+  async function leaveTournamentFunc(req, res) {
+    try {
+      const tournamentId = req.params.id
+      const userId = res.locals.user._id
+      console.log(`${userId} leaving tournament ${tournamentId}`)
+
+      const tournament = await Tournament.findOne({ _id: tournamentId, entrants: { $eq: userId } }).exec()
+      if (!tournament || !tournament.entrants) {
+        console.log(`${userId} already not in ${tournamentId} or don't exist`)
+        res.send({tournamentId: tournamentId, userId: userId})
+      }
+      tournament.entrants.pull(userId)
+      const savedTournament = await tournament.save()
+      res.send({tournamentId: savedTournament._id, userId: userId})
+    } catch (e) {
+      console.error(e)
+      res.status(500).send({ error: 'unable to leave tournament' })
     }
   }
 ]
@@ -56,4 +78,5 @@ module.exports = {
   getTournamentsHandler,
   createTournamentHandler,
   joinTournamentHandler,
+  leaveTournamentHandler,
 }
