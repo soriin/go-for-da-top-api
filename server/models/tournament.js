@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Schema.Types.ObjectId;
 
-var tournamentSchema = mongoose.Schema({
+const tournamentSchema = mongoose.Schema({
   title: String,
   creator: {
     type: ObjectId,

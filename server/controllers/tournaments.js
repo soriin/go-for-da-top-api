@@ -1,9 +1,12 @@
 const Tournament = require('../models/tournament')
+const UserRole = require('../models/userRole')
 const moment = require('moment')
+const logger = require('../logging/logger')
 
 const getTournamentsHandler = [
   async function getTournamentsFunc(req, res) {
-    const isActive = req.params.isActive || true
+    let isActive = req.params.isActive
+    if (isActive === undefined) isActive = false
     const tournaments = await Tournament.find({ isActive: isActive }).exec()
     res.send(tournaments)
   }
@@ -11,8 +14,10 @@ const getTournamentsHandler = [
 
 const createTournamentHandler = [
   async function createTournamentFunc(req, res) {
+    const userId = res.locals.user._id
+    let savedTournament
     try {
-      console.log('creating tournament', req.body)
+      logger.info('creating tournament', req.body)
       const body = req.body
       const newT = new Tournament()
       newT.title = body.title
@@ -21,12 +26,22 @@ const createTournamentHandler = [
       newT.creator = res.locals.user._id
       newT.isActive = false
 
-      const savedTournament = await newT.save()
-      res.send(savedTournament)
+      savedTournament = await newT.save()
     } catch (e) {
-      console.error(e)
+      logger.error(e)
       res.status(500).send({ error: 'unable to create tournament' })
     }
+    try {
+       await UserRole.update(
+         {userId: userId, tournamentId: savedTournament._id},
+        {role: 'TO'},
+        {upsert: true})
+        .exec()
+    } catch (e) {
+      logger.warn(`unable to create TO role for ${userId}`)
+    }
+
+    res.send(savedTournament)
   }
 ]
 
@@ -35,18 +50,19 @@ const joinTournamentHandler = [
     try {
       const tournamentId = req.params.id
       const userId = res.locals.user._id
-      console.log(`${userId} joining tournament ${tournamentId}`)
+      logger.info(`${userId} joining tournament ${tournamentId}`)
 
-      const tournament = await Tournament.findOne({ _id: tournamentId, isActive: false, entrants: { $ne: userId } }).exec()
-      if (!tournament) {
-        console.log(`${userId} unable to join ${tournamentId}`)
+      const result = await Tournament.update(
+        { _id: tournamentId, isActive: false, entrants: { $ne: userId } },
+        {$addToSet: {entrants: userId}})
+        .exec()
+      if (!result.ok) {
+        logger.info(`${userId} unable to join ${tournamentId}`)
         return res.status(404).send()
       }
-      tournament.entrants.push(userId)
-      const savedTournament = await tournament.save()
-      res.send({tournamentId: savedTournament._id, userId: userId})
+      res.send({tournamentId, userId})
     } catch (e) {
-      console.error(e)
+      logger.error(e)
       res.status(500).send({ error: 'unable to join tournament' })
     }
   }
@@ -57,18 +73,19 @@ const leaveTournamentHandler = [
     try {
       const tournamentId = req.params.id
       const userId = res.locals.user._id
-      console.log(`${userId} leaving tournament ${tournamentId}`)
+      logger.info(`${userId} leaving tournament ${tournamentId}`)
 
-      const tournament = await Tournament.findOne({ _id: tournamentId, isActive: false, entrants: { $eq: userId } }).exec()
-      if (!tournament || !tournament.entrants) {
-        console.log(`${userId} unable to leave ${tournamentId}`)
-        res.send({tournamentId: tournamentId, userId: userId})
+      const result = await Tournament.update(
+        { _id: tournamentId, isActive: false, entrants: { $ne: userId } },
+        {$pull: {entrants: userId}})
+        .exec()
+      if (!result.ok) {
+        logger.info(`${userId} unable to leave ${tournamentId}`)
+        return res.send({tournamentId, userId})
       }
-      tournament.entrants.pull(userId)
-      const savedTournament = await tournament.save()
-      res.send({tournamentId: savedTournament._id, userId: userId})
+      res.send({tournamentId, userId})
     } catch (e) {
-      console.error(e)
+      logger.error(e)
       res.status(500).send({ error: 'unable to leave tournament' })
     }
   }
@@ -79,7 +96,7 @@ const activateTournamentHandler = [
     try {
       const tournamentId = req.params.id
       const userId = res.locals.user._id
-      console.log(`${userId} activating tournament ${tournamentId}`)
+      logger.info(`${userId} activating tournament ${tournamentId}`)
       const tournament = await Tournament.findOneAndUpdate(
         {_id: tournamentId, isActive: false},
         {isActive: true},
@@ -87,7 +104,7 @@ const activateTournamentHandler = [
         .exec()
       res.send(tournament)
     } catch (e) {
-      console.error(e)
+      logger.error(e)
       res.status(500).send({ error: 'unable to activate tournament' })
     }
   }
