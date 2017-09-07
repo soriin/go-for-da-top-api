@@ -19,7 +19,7 @@ const createTournamentHandler = [
       newT.startDate = moment(body.startDate).toDate()
       newT.endDate = moment(body.endDate).toDate()
       newT.creator = res.locals.user._id
-      newT.isActive = true
+      newT.isActive = false
 
       const savedTournament = await newT.save()
       res.send(savedTournament)
@@ -37,10 +37,10 @@ const joinTournamentHandler = [
       const userId = res.locals.user._id
       console.log(`${userId} joining tournament ${tournamentId}`)
 
-      const tournament = await Tournament.findOne({ _id: tournamentId, entrants: { $ne: userId } }).exec()
+      const tournament = await Tournament.findOne({ _id: tournamentId, isActive: false, entrants: { $ne: userId } }).exec()
       if (!tournament) {
-        console.log(`${userId} already in ${tournamentId} or don't exist`)
-        return res.status(409).send()
+        console.log(`${userId} unable to join ${tournamentId}`)
+        return res.status(404).send()
       }
       tournament.entrants.push(userId)
       const savedTournament = await tournament.save()
@@ -59,9 +59,9 @@ const leaveTournamentHandler = [
       const userId = res.locals.user._id
       console.log(`${userId} leaving tournament ${tournamentId}`)
 
-      const tournament = await Tournament.findOne({ _id: tournamentId, entrants: { $eq: userId } }).exec()
+      const tournament = await Tournament.findOne({ _id: tournamentId, isActive: false, entrants: { $eq: userId } }).exec()
       if (!tournament || !tournament.entrants) {
-        console.log(`${userId} already not in ${tournamentId} or don't exist`)
+        console.log(`${userId} unable to leave ${tournamentId}`)
         res.send({tournamentId: tournamentId, userId: userId})
       }
       tournament.entrants.pull(userId)
@@ -74,9 +74,29 @@ const leaveTournamentHandler = [
   }
 ]
 
+const activateTournamentHandler = [
+  async function activateTournamentFunc(req, res) {
+    try {
+      const tournamentId = req.params.id
+      const userId = res.locals.user._id
+      console.log(`${userId} activating tournament ${tournamentId}`)
+      const tournament = await Tournament.findOneAndUpdate(
+        {_id: tournamentId, isActive: false},
+        {isActive: true},
+        {new: true})
+        .exec()
+      res.send(tournament)
+    } catch (e) {
+      console.error(e)
+      res.status(500).send({ error: 'unable to activate tournament' })
+    }
+  }
+]
+
 module.exports = {
   getTournamentsHandler,
   createTournamentHandler,
   joinTournamentHandler,
   leaveTournamentHandler,
+  activateTournamentHandler,
 }

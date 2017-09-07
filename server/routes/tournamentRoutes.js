@@ -5,5 +5,6 @@ router.get('/', ...tournamentController.getTournamentsHandler)
 router.post('/', ...tournamentController.createTournamentHandler)
 router.post('/:id/entrant', ...tournamentController.joinTournamentHandler)
 router.delete('/:id/entrant', ...tournamentController.leaveTournamentHandler)
+router.post('/:id/activation', ...tournamentController.activateTournamentHandler)
 
 module.exports = router
