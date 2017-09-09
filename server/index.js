@@ -5,6 +5,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const mongoose = require('mongoose');
 const Routes = require('./routes/routes')
+const logger = require('./logging/logger')
+const bunyan = require('bunyan')
 
 mongoose.Promise = global.Promise;
 // Configure the Facebook strategy for use by Passport.
@@ -25,7 +27,7 @@ passport.use(new Strategy({
     // be associated with a user record in the application's database, which
     // allows for account linking and authentication with other identity
     // providers.
-    console.log(accessToken, refreshToken, profile)
+    logger.info(accessToken, refreshToken, profile)
     return cb(null, { profile, accessToken });
   }));
 
@@ -40,12 +42,12 @@ passport.use(new Strategy({
 // example does not have a database, the complete Facebook profile is serialized
 // and deserialized.
 passport.serializeUser(function (user, cb) {
-  console.log('serializeUser', user)
+  logger.info('serializeUser', user)
   cb(null, user);
 });
 
 passport.deserializeUser(function (obj, cb) {
-  console.log('deserializeUser', obj)
+  logger.info('deserializeUser', obj)
   cb(null, obj);
 });
 
@@ -53,9 +55,9 @@ passport.deserializeUser(function (obj, cb) {
 // Create a new Express application.
 var app = express();
 var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
+db.on('error', logger.error.bind(console, 'connection error:'));
 db.once('open', function () {
-  console.log('mongodb connected')
+  logger.info('mongodb connected')
 });
 
 mongoose.connect(process.env.mongodb, {
@@ -81,5 +83,5 @@ app.use(passport.session());
 
 app.use('/', Routes)
 
-app.listen(process.env.PORT, () => { console.log(`Server started on : ${process.env.PORT}`) });
+app.listen(process.env.PORT, () => { logger.info(`Server started on : ${process.env.PORT}`) });
 
