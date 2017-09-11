@@ -19,7 +19,12 @@ const tournamentSchema = mongoose.Schema({
     type: Boolean,
     default: true
   },
+  isComplete: {
+    type: Boolean,
+    default: false
+  },
   entrants: [ObjectId],
+  organizers: [ObjectId]
 });
 
 module.exports = mongoose.model('Tournament', tournamentSchema);
