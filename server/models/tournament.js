@@ -15,9 +15,13 @@ const tournamentSchema = mongoose.Schema({
     type: Date,
     index: true
   },
+  weeks: {
+    type: Number,
+    default: 0
+  },
   isActive: {
     type: Boolean,
-    default: true
+    default: false
   },
   isComplete: {
     type: Boolean,
