@@ -2,6 +2,7 @@ const router = require('express').Router()
 const loginRoutes = require('./loginRoutes')
 const tournamentRoutes = require('./tournamentRoutes')
 const userRoutes = require('./userRoutes')
+const matchupRoutes = require('./matchupRoutes')
 const User = require('../models/user');
 
 router.use('/login', loginRoutes)
@@ -29,5 +30,6 @@ const auth = async function auth(req, res, next) {
 router.use(auth)
 router.use('/users', userRoutes)
 router.use('/tournaments', tournamentRoutes)
+router.use('/matchups', matchupRoutes)
 
 module.exports = router

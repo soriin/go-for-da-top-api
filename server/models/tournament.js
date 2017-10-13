@@ -5,7 +5,8 @@ const tournamentSchema = mongoose.Schema({
   title: String,
   creator: {
     type: ObjectId,
-    index: true
+    index: true,
+    ref: 'User'
   },
   startDate: {
     type: Date,
@@ -27,8 +28,14 @@ const tournamentSchema = mongoose.Schema({
     type: Boolean,
     default: false
   },
-  entrants: [ObjectId],
-  organizers: [ObjectId]
+  entrants: [{
+    type: ObjectId,
+    ref: 'PlayerEntry'
+  }],
+  organizers: [{
+    type: ObjectId,
+    ref: 'User'
+  }]
 });
 
 module.exports = mongoose.model('Tournament', tournamentSchema);

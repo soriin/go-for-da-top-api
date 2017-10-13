@@ -1,6 +1,9 @@
 const Tournament = require('../models/tournament')
+const User = require('../models/user')
+const Matchup = require('../models/matchup')
 const moment = require('moment')
 const logger = require('../logging/logger')
+const tournamentSvc = require('../services/tournamentService')
 
 const getTournamentsHandler = [
   async function getTournamentsFunc(req, res) {
@@ -18,6 +21,7 @@ const createTournamentHandler = [
       const newT = new Tournament()
 
       newT.title = body.title
+      newT.weeks = body.weeks
       newT.startDate = moment(body.startDate).toDate()
       newT.endDate = moment(body.endDate).toDate()
       newT.creator = res.locals.user._id
@@ -110,10 +114,64 @@ const activateTournamentHandler = [
         { isActive: true },
         { new: true })
         .exec()
+
+      if (!tournament) {
+        return res.status(405).send()
+      }
+
+      tournamentSvc.createEntries(tournament)
+
       res.send(tournament)
     } catch (e) {
       logger.error(e)
       res.status(500).send({ error: 'unable to activate tournament' })
+    }
+  }
+]
+
+const forceAllJoinHandler = [
+  async function forceAllJoinFunc(req, res) {
+    try {
+      const tournamentId = req.params.id
+      logger.info(`forcing all users to join tournament ${tournamentId}`)
+
+      const userIds = await User.find().select({_id: 1}).lean().exec()
+      const result = await Tournament.update(
+        { _id: tournamentId, isActive: false },
+        { $addToSet: { entrants: {$each: userIds} } })
+        .exec()
+
+      res.send({ok: result.ok})
+    } catch (e) {
+      logger.error(e)
+      res.status(500).send({ error: 'unable to for joins' })
+    }
+  }
+]
+
+const getMatchupsHandler = [
+  async function getMatchupsFunc(req, res) {
+    try {
+      const tournamentId = req.params.id
+      const userId = req.query.userId
+      logger.info(`getting matchups for tournament ${tournamentId} and user ${userId}`)
+
+      let findOptions = {
+        tournamentId: tournamentId
+      }
+      if (userId) {
+        findOptions.playerEntries = {
+          $elemMatch: {
+            playerId: userId
+          }
+        }
+      }
+      const matchups = await Matchup.find(findOptions).lean().exec()
+
+      res.send({matchups, count: matchups.length})
+    } catch (e) {
+      logger.error(e)
+      res.status(500).send({ error: 'unable to retrieve matchups' })
     }
   }
 ]
@@ -125,4 +183,6 @@ module.exports = {
   leaveTournamentHandler,
   activateTournamentHandler,
   cancelTournamentHandler,
+  forceAllJoinHandler,
+  getMatchupsHandler,
 }
