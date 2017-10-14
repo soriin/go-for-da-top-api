@@ -7,8 +7,13 @@ const tournamentSvc = require('../services/tournamentService')
 
 const getTournamentsHandler = [
   async function getTournamentsFunc(req, res) {
-    const tournaments = await Tournament.find().exec()
-    res.send(tournaments)
+    try {
+      const tournaments = await Tournament.find().exec()
+      res.send(tournaments)
+    } catch (e) {
+      logger.error(e)
+      res.status(500).send({ error: 'unable to retrieve tournaments' })
+    }
   }
 ]
 
@@ -47,7 +52,7 @@ const cancelTournamentHandler = [
       const response = await Tournament.deleteOne({ _id: tournamentId, organizers: userId }).exec()
       if (!response.result.ok) {
         logger.error(`${userId} unable to cancel tournament ${tournamentId}`)
-        return res.status(404).send()
+        return res.status(404).end()
       }
       res.send({ tournamentId, userId })
     } catch (e) {
@@ -70,7 +75,7 @@ const joinTournamentHandler = [
         .exec()
       if (!result.ok) {
         logger.info(`${userId} unable to join tournament ${tournamentId}`)
-        return res.status(404).send()
+        return res.status(404).end()
       }
       res.send({ tournamentId, userId })
     } catch (e) {
@@ -116,7 +121,7 @@ const activateTournamentHandler = [
         .exec()
 
       if (!tournament) {
-        return res.status(405).send()
+        return res.status(405).end()
       }
 
       tournamentSvc.createEntries(tournament)
@@ -135,13 +140,13 @@ const forceAllJoinHandler = [
       const tournamentId = req.params.id
       logger.info(`forcing all users to join tournament ${tournamentId}`)
 
-      const userIds = await User.find().select({_id: 1}).lean().exec()
+      const userIds = await User.find().select({ _id: 1 }).lean().exec()
       const result = await Tournament.update(
         { _id: tournamentId, isActive: false },
-        { $addToSet: { entrants: {$each: userIds} } })
+        { $addToSet: { entrants: { $each: userIds } } })
         .exec()
 
-      res.send({ok: result.ok})
+      res.send({ ok: result.ok })
     } catch (e) {
       logger.error(e)
       res.status(500).send({ error: 'unable to for joins' })
@@ -157,18 +162,22 @@ const getMatchupsHandler = [
       logger.info(`getting matchups for tournament ${tournamentId} and user ${userId}`)
 
       let findOptions = {
-        tournamentId: tournamentId
+        tournament: tournamentId
       }
       if (userId) {
-        findOptions.playerEntries = {
+        findOptions.battles = {
           $elemMatch: {
-            playerId: userId
+            entries: {
+              $elemMatch: {
+                player: userId
+              }
+            }
           }
         }
       }
       const matchups = await Matchup.find(findOptions).lean().exec()
 
-      res.send({matchups, count: matchups.length})
+      res.send({ matchups, count: matchups.length })
     } catch (e) {
       logger.error(e)
       res.status(500).send({ error: 'unable to retrieve matchups' })
