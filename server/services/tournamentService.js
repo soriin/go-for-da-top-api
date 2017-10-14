@@ -25,11 +25,17 @@ const createEntries = function createEntriesFunc(tournament) {
     for (let i = 0; i < gamesPerWeek && games.length > 0; i++) {
       const game = games.pop()
       const match = new Matchup()
-      match.tournamentId = tournament._id
+      match.tournament = tournament._id
       match.startDate = startDate.add(week, 'weeks')
       match.endDate = startDate.add(week + 1, 'weeks')
-      match.playerEntries.push({playerId: game.player1})
-      match.playerEntries.push({playerId: game.player2})
+
+      const battle = {
+        entries: [
+          {player: game.player1},
+          {player: game.player2}
+        ]
+      }
+      match.battles = [battle, battle]
 
       match.save(match)
     }

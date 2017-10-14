@@ -2,16 +2,50 @@ const mongoose = require('mongoose')
 const ObjectId = mongoose.Schema.Types.ObjectId;
 
 const playerEntry = mongoose.Schema({
-  playerId: {
+  player: {
     type: ObjectId,
-    ref: 'User'
+    ref: 'User',
+    required: true
   },
-  imageProof: String,
-  score: Number
+  imageProofUrl: String,
+  exScore: Number
 })
 
-const matchupSchema = mongoose.Schema({
-  tournamentId: {
+const playerScore = mongoose.Schema({
+  player: {
+    type: ObjectId,
+    ref: 'User',
+    required: true
+  },
+  score: {
+    type: Number,
+    required: true
+  }
+})
+
+const battle = mongoose.Schema({
+  song: {
+    type: ObjectId,
+    ref: 'Song'
+  },
+  entries: [playerEntry],
+  scores: [playerScore]
+})
+
+const verification = mongoose.Schema({
+  verifier: {
+    type: ObjectId,
+    ref: 'User',
+    required: true
+  },
+  verifiedOn: {
+    type: Date,
+    required: true
+  }
+})
+
+const matchup = mongoose.Schema({
+  tournament: {
     type: ObjectId,
     ref: 'Tournament'
   },
@@ -23,12 +57,8 @@ const matchupSchema = mongoose.Schema({
     type: Date,
     required: true
   },
-  playerEntries: [playerEntry],
-  winningEntry: {
-    type: ObjectId,
-    ref: 'PlayerEntry'
-  }
+  battles: [battle],
+  verification: verification
 })
 
-module.exports = mongoose.model('PlayerEntry', playerEntry)
-module.exports = mongoose.model('Matchup', matchupSchema)
+module.exports = mongoose.model('Matchup', matchup)
