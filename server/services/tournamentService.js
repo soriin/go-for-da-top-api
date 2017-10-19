@@ -6,14 +6,14 @@ const logger = require('../logging/logger')
 const createEntries = function createEntriesFunc(tournament) {
   // Get list of all games that need to be played
   let games = []
-  const {weeks, entrants} = tournament
+  const { weeks, entrants } = tournament
   const startDate = moment(tournament.startDate)
 
-  for (let i = 0; i < entrants.length; i++ ) {
+  for (let i = 0; i < entrants.length; i++) {
     const player1 = entrants[i]
     for (let j = i + 1; j < entrants.length; j++) {
       const player2 = entrants[j]
-      games.push({player1, player2})
+      games.push({ player1, player2 })
     }
   }
 
@@ -28,14 +28,20 @@ const createEntries = function createEntriesFunc(tournament) {
       match.tournament = tournament._id
       match.startDate = startDate.add(week, 'weeks')
       match.endDate = startDate.add(week + 1, 'weeks')
-
-      const battle = {
-        entries: [
-          {player: game.player1},
-          {player: game.player2}
-        ]
+      match.player1 = {
+        user: game.player1
       }
-      match.battles = [battle, battle]
+      match.player2 = {
+        user: game.player2
+      }
+      match.battles = [
+        {
+          chooser: game.player1
+        },
+        {
+          chooser: game.player2
+        }
+      ]
 
       match.save(match)
     }

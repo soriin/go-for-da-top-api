@@ -8,6 +8,14 @@ const song = mongoose.Schema({
   alternateTitle: {
     type: String
   },
+  artist: {
+    type: String,
+    required: true
+  },
+  bpm: {
+    type: String,
+    required: true
+  },
   difficulty: {
     type: String,
     required: true

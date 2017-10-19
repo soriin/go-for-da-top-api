@@ -17,7 +17,7 @@ const hasAdminPrivs = async function hasAdminPrivsFunc(matchupId, userId) {
 }
 
 const getWinner = async function getWinnerFunc(matchupId) {
-  const matchup = await Matchup.fineOne({_id: matchupId}).lean().exec()
+  const matchup = await Matchup.findOne({_id: matchupId}).lean().exec()
 }
 
 module.exports = {

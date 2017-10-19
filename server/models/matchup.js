@@ -1,35 +1,26 @@
 const mongoose = require('mongoose')
 const ObjectId = mongoose.Schema.Types.ObjectId;
+const Mixed = mongoose.Schema.Types.Mixed;
 
-const playerEntry = mongoose.Schema({
-  player: {
-    type: ObjectId,
-    ref: 'User',
-    required: true
-  },
-  imageProofUrl: String,
-  exScore: Number
-})
 
-const playerScore = mongoose.Schema({
-  player: {
-    type: ObjectId,
-    ref: 'User',
-    required: true
-  },
-  score: {
-    type: Number,
-    required: true
-  }
-})
+  // playerEntry ->
+  // userId.
+  //   imageProofUrl: String,
+  //   exScore: Number,
+  //   isWinner: Boolean
+
 
 const battle = mongoose.Schema({
   song: {
     type: ObjectId,
     ref: 'Song'
   },
-  entries: [playerEntry],
-  scores: [playerScore]
+  chooser: {
+    type: ObjectId,
+    ref: 'User',
+    required: true
+  },
+  entries: Mixed
 })
 
 const verification = mongoose.Schema({
@@ -56,6 +47,28 @@ const matchup = mongoose.Schema({
   endDate:{
     type: Date,
     required: true
+  },
+  player1: {
+    user: {
+      type: ObjectId,
+    ref: 'User',
+    required: true
+    },
+    score: {
+      type: Number,
+      default: 0
+    }
+  },
+  player2: {
+    user: {
+      type: ObjectId,
+    ref: 'User',
+    required: true
+    },
+    score: {
+      type: Number,
+      default: 0
+    }
   },
   battles: [battle],
   verification: verification

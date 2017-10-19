@@ -121,7 +121,7 @@ const activateTournamentHandler = [
         .exec()
 
       if (!tournament) {
-        return res.status(405).end()
+        return res.status(404).end()
       }
 
       tournamentSvc.createEntries(tournament)
@@ -143,10 +143,12 @@ const forceAllJoinHandler = [
       const userIds = await User.find().select({ _id: 1 }).lean().exec()
       const result = await Tournament.update(
         { _id: tournamentId, isActive: false },
-        { $addToSet: { entrants: { $each: userIds } } })
+        { $addToSet: { entrants: { $each: userIds } } },
+        {new: true})
+        .lean()
         .exec()
 
-      res.send({ ok: result.ok })
+      res.send(result )
     } catch (e) {
       logger.error(e)
       res.status(500).send({ error: 'unable to for joins' })
@@ -161,21 +163,13 @@ const getMatchupsHandler = [
       const userId = req.query.userId
       logger.info(`getting matchups for tournament ${tournamentId} and user ${userId}`)
 
-      let findOptions = {
-        tournament: tournamentId
-      }
-      if (userId) {
-        findOptions.battles = {
-          $elemMatch: {
-            entries: {
-              $elemMatch: {
-                player: userId
-              }
-            }
-          }
-        }
-      }
-      const matchups = await Matchup.find(findOptions).lean().exec()
+      const matchups = await Matchup.find({
+        tournament: tournamentId,
+        $or: [
+          { 'player1.user': userId },
+          { 'player2.user': userId }
+        ]
+      }).lean().exec()
 
       res.send({ matchups, count: matchups.length })
     } catch (e) {
