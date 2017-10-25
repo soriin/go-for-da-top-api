@@ -7,6 +7,7 @@ router.put('/:id', ...matchupController.updateMatchupHandler)
 
 router.post('/:id/verification', ...matchupController.verifyMatchupHandler)
 router.post('/:id/submission', ...matchupController.submitEntryMatchupHandler)
+router.post('/:id/songselection', ...matchupController.songSelectionHandler)
 
 router.delete('/:id/verification', ...matchupController.unverifyMatchupHandler)
 

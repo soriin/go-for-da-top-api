@@ -31,10 +31,7 @@ const getMatchupsHandler = [
       logger.info(`getting matchups for user ${userId}`)
       const matchups = await Matchup
         .find({
-          $or: [
-            { 'player1.user': userId },
-            { 'player2.user': userId }
-          ]
+          'players.user': userId
         })
         .lean()
         .exec()
@@ -86,10 +83,8 @@ const verifyMatchupHandler = [
       logger.info(`attempting to verify matchup ${matchupId} as user ${userId}`, req.body)
 
       const validProperties = [
-        'player1Score',
-        'player2Score',
-        'battle1Winners',
-        'battle2Winners'
+        'playerScores',
+        'songWinners',
       ]
       const verifiedData = sanitizeSvc.sanitize(req.body, validProperties)
 
@@ -100,27 +95,29 @@ const verifyMatchupHandler = [
       }
 
       theMatchup.verification = { verifier: userId, verifiedOn: moment().toDate() }
-      theMatchup.player1.score = verifiedData.player1Score
-      theMatchup.player2.score = verifiedData.player2Score
 
-      verifiedData.battle1Winners.forEach(winner => {
-        const entry = theMatchup.battle[0].entries[winner]
-        if (entry) {
-          entry.isWinner = true
-        }
+      theMatchup.players.forEach(player => {
+        player.score = verifiedData.playerScores[player.user]
       })
-      verifiedData.battle2Winners.forEach(winner => {
-        const entry = theMatchup.battle[1].entries[winner]
-        if (entry) {
-          entry.isWinner = true
-        }
+
+      theMatchup.battles.forEach(battle => {
+        const winners = verifiedData.songWinners[battle.song]
+        if (!winners) return
+
+        Object.keys(battle.entries).forEach(entry => {
+          if (winners.includes(entry)) {
+            battle.entries[entry].isWinner = true
+          } else {
+            battle.entries[entry].isWinner = false
+          }
+        })
       })
 
       const savedData = await theMatchup.save()
 
       res.send(savedData)
     } catch (e) {
-      logger.error(e)
+      logger.error({ err: e })
       res.status(500).send({ error: 'unable to verify matchup' })
     }
   }
@@ -130,7 +127,25 @@ const unverifyMatchupHandler = [
   authMatchupAdmin,
   async function unverifyMatchupFunc(req, res) {
     try {
-      res.send()
+      const userId = res.locals.user._id
+      const matchupId = req.params.id
+      logger.info(`attempting to unverify matchup ${matchupId} as user ${userId}`)
+
+      const updated = await Matchup.findOneAndUpdate(
+        { _id: matchupId },
+        {
+          verification: undefined,
+          'players.score': 0
+        },
+        { new: true }
+      ).lean()
+        .exec()
+
+      if (!updated) {
+        return res.status(404).end()
+      }
+
+      res.send(updated)
     } catch (e) {
       logger.error(e)
       res.status(500).send({ error: 'unable to unverify matchup' })
@@ -156,7 +171,7 @@ const submitEntryMatchupHandler = [
       updateValue[`${userId}`] = updatedData
 
       const updatedMatchup = await Matchup.findOneAndUpdate(
-        { _id: matchupId, 'battles.song': body.song },
+        { _id: matchupId, 'battles.song': body.song, endDate: { $gte: moment().toDate() } },
         {
           'battles.$.entries': updateValue
         },
@@ -177,10 +192,46 @@ const submitEntryMatchupHandler = [
   }
 ]
 
+const songSelectionHandler = [
+  async function songSelectionFunc(req, res) {
+    try {
+      const matchupId = req.params.id
+      const userId = res.locals.user._id
+      logger.info(`attempting to set song selection for matchup ${matchupId} as user ${userId}`, req.body)
+
+      const body = req.body
+      const updateableProperties = [
+        'songId',
+        'battleId'
+      ]
+      const updatedData = sanitizeSvc.sanitize(body, updateableProperties)
+
+      const updatedMatchup = await Matchup.findOneAndUpdate(
+        {
+          _id: matchupId,
+          battles: { $elemMatch: { _id: updatedData.battleId, chooser: userId } }
+        },
+        {
+          'battles.&.song': updatedData.songId
+        },
+        { new: true })
+
+      if (!updatedMatchup) {
+        return res.status(404).end()
+      }
+      res.send(updatedMatchup)
+    } catch (e) {
+      logger.error(e)
+      res.status(500).send({ error: 'unable to set song selection for matchup' })
+    }
+  }
+]
+
 module.exports = {
   getMatchupsHandler,
   updateMatchupHandler,
   verifyMatchupHandler,
   unverifyMatchupHandler,
   submitEntryMatchupHandler,
+  songSelectionHandler,
 }

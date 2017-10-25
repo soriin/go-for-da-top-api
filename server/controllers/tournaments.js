@@ -4,6 +4,7 @@ const Matchup = require('../models/matchup')
 const moment = require('moment')
 const logger = require('../logging/logger')
 const tournamentSvc = require('../services/tournamentService')
+const mongooseTypes = require('mongoose').Types
 
 const getTournamentsHandler = [
   async function getTournamentsFunc(req, res) {
@@ -144,11 +145,11 @@ const forceAllJoinHandler = [
       const result = await Tournament.update(
         { _id: tournamentId, isActive: false },
         { $addToSet: { entrants: { $each: userIds } } },
-        {new: true})
+        { new: true })
         .lean()
         .exec()
 
-      res.send(result )
+      res.send(result)
     } catch (e) {
       logger.error(e)
       res.status(500).send({ error: 'unable to for joins' })
@@ -165,13 +166,36 @@ const getMatchupsHandler = [
 
       const matchups = await Matchup.find({
         tournament: tournamentId,
-        $or: [
-          { 'player1.user': userId },
-          { 'player2.user': userId }
-        ]
+        'players.user': userId
       }).lean().exec()
 
       res.send({ matchups, count: matchups.length })
+    } catch (e) {
+      logger.error(e)
+      res.status(500).send({ error: 'unable to retrieve matchups' })
+    }
+  }
+]
+
+const getStandingsHandler = [
+  async function getStandingsFunc(req, res) {
+    try {
+      const tournamentId = req.params.id
+      const userId = req.query.userId
+      logger.info(`getting standings for tournament ${tournamentId}`)
+
+      const standings = await Matchup.aggregate([
+        {'$match': {tournament: mongooseTypes.ObjectId(tournamentId)}}
+        ,{'$unwind': '$players'}
+        ,{'$replaceRoot': {newRoot: '$players'}}
+        ,{'$group': {_id: '$user', score: {'$sum': '$score'}}}
+        ,{'$lookup': { from: 'users', localField: '_id', foreignField: '_id', as: 'user' }}
+        ,{'$unwind': '$user'}
+        ,{'$project': {'user.realName': 1, 'score': 1}}
+      ])
+      .exec()
+
+      res.send(standings)
     } catch (e) {
       logger.error(e)
       res.status(500).send({ error: 'unable to retrieve matchups' })
@@ -188,4 +212,5 @@ module.exports = {
   cancelTournamentHandler,
   forceAllJoinHandler,
   getMatchupsHandler,
+  getStandingsHandler,
 }

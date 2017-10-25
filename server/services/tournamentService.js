@@ -28,12 +28,12 @@ const createEntries = function createEntriesFunc(tournament) {
       match.tournament = tournament._id
       match.startDate = startDate.add(week, 'weeks')
       match.endDate = startDate.add(week + 1, 'weeks')
-      match.player1 = {
+      match.players = [{
         user: game.player1
-      }
-      match.player2 = {
+      },
+      {
         user: game.player2
-      }
+      }]
       match.battles = [
         {
           chooser: game.player1

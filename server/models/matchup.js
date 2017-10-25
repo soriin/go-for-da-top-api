@@ -9,6 +9,17 @@ const Mixed = mongoose.Schema.Types.Mixed;
   //   exScore: Number,
   //   isWinner: Boolean
 
+const player = mongoose.Schema({
+  user: {
+    type: ObjectId,
+  ref: 'User',
+  required: true
+  },
+  score: {
+    type: Number,
+    default: 0
+  }
+})
 
 const battle = mongoose.Schema({
   song: {
@@ -38,7 +49,8 @@ const verification = mongoose.Schema({
 const matchup = mongoose.Schema({
   tournament: {
     type: ObjectId,
-    ref: 'Tournament'
+    ref: 'Tournament',
+    index: true
   },
   startDate: {
     type: Date,
@@ -48,28 +60,7 @@ const matchup = mongoose.Schema({
     type: Date,
     required: true
   },
-  player1: {
-    user: {
-      type: ObjectId,
-    ref: 'User',
-    required: true
-    },
-    score: {
-      type: Number,
-      default: 0
-    }
-  },
-  player2: {
-    user: {
-      type: ObjectId,
-    ref: 'User',
-    required: true
-    },
-    score: {
-      type: Number,
-      default: 0
-    }
-  },
+  players: [player],
   battles: [battle],
   verification: verification
 })

@@ -11,7 +11,8 @@ const logger = bunyan.createLogger({
     type: 'raw',
     stream: consoleStream.createStream(streamOptions)
   }],
-  level: 'info'
+  level: 'info',
+  serializers: bunyan.stdSerializers
 })
 
 module.exports = logger
