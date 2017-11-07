@@ -33,11 +33,14 @@ const getMatchupsHandler = [
         .find({
           'players.user': userId
         })
+        .populate('battles.song')
         .lean()
         .exec()
+      
+      matchups.forEach(m => matchupSvc.sanitizeMatchupScores(m, userId))
       res.send({ matchups, count: matchups.length })
     } catch (e) {
-      logger.error(e)
+      logger.error(e.stack)
       res.status(500).send({ error: 'unable to retrieve matchups' })
     }
   }

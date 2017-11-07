@@ -16,11 +16,19 @@ const hasAdminPrivs = async function hasAdminPrivsFunc(matchupId, userId) {
   return true
 }
 
-const getWinner = async function getWinnerFunc(matchupId) {
-  const matchup = await Matchup.findOne({_id: matchupId}).lean().exec()
+const sanitizeMatchupScores = function sanitizeMatchupScoresFunc(matchup, userId) {
+  if (matchup.verification) return
+
+  matchup.battles.forEach(b => {
+    if (!b.entries) return
+    Object.keys(b.entries).forEach(user => {
+      if (user === userId) return
+      b.entries[user] = undefined
+    })
+  })
 }
 
 module.exports = {
   hasAdminPrivs,
-  getWinner
+  sanitizeMatchupScores,
 }

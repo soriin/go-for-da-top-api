@@ -169,6 +169,20 @@ const getMatchupsHandler = [
         'players.user': userId
       }).lean().exec()
 
+      matchups.forEach(match => {
+        const showEntries = moment(match.endDate) <= moment() && match.verification
+        
+        if (!showEntries) {
+          match.battles.forEach(battle => {
+            battle.entries = {}
+          })
+          match.players.forEach(player => {
+            player.score = undefined
+          })
+        }
+        
+      })
+
       res.send({ matchups, count: matchups.length })
     } catch (e) {
       logger.error(e)
@@ -181,7 +195,6 @@ const getStandingsHandler = [
   async function getStandingsFunc(req, res) {
     try {
       const tournamentId = req.params.id
-      const userId = req.query.userId
       logger.info(`getting standings for tournament ${tournamentId}`)
 
       const standings = await Matchup.aggregate([
