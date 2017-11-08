@@ -6,7 +6,6 @@ const helmet = require('helmet');
 const mongoose = require('mongoose');
 const Routes = require('./routes/routes')
 const logger = require('./logging/logger')
-const bunyan = require('bunyan')
 
 mongoose.Promise = global.Promise;
 // Configure the Facebook strategy for use by Passport.

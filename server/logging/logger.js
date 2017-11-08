@@ -1,18 +1,26 @@
-const bunyan = require('bunyan')
-const consoleStream = require('bunyan-console-stream')
+const winston = require('winston')
 
-const streamOptions = {
-  stderrThreshold:40 //log warning, error and fatal messages on STDERR
-};
-
-const logger = bunyan.createLogger({
-  name: 'main',
-  streams:[{
-    type: 'raw',
-    stream: consoleStream.createStream(streamOptions)
-  }],
+const logger = winston.createLogger({
   level: 'info',
-  serializers: bunyan.stdSerializers
-})
+  format: winston.format.json()
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple()
+  }));
+}
+
+if (process.env.NODE_ENV !== 'dev') {
+  var options = {
+    key: process.env.loggerKey,
+    env: process.env.NODE_ENV,
+    index_meta: true,
+    handleExceptions: true
+  };
+  
+  logger.add(winston.transports.Logdna, options);
+}
+
 
 module.exports = logger
