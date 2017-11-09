@@ -1,3 +1,4 @@
+const logdna = require('logdna')
 const winston = require('winston')
 
 const logger = winston.createLogger({
@@ -19,7 +20,7 @@ if (process.env.NODE_ENV !== 'dev') {
     handleExceptions: true
   };
   
-  logger.add(winston.transports.Logdna, options);
+  logger.add(new logdna.WinstonTransport(options));
 }
 
 
