@@ -20,7 +20,7 @@ if (process.env.NODE_ENV !== 'dev') {
     handleExceptions: true
   };
   
-  logger.add(new logdna.WinstonTransport(options));
+  //logger.add(new logdna.WinstonTransport(options));
 }
 
 
