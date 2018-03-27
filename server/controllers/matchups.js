@@ -206,18 +206,17 @@ const songSelectionHandler = [
 
       const body = req.body
       const updateableProperties = [
-        'songId',
-        'battleId'
+        'songId'
       ]
       const updatedData = sanitizeSvc.sanitize(body, updateableProperties)
 
       const updatedMatchup = await Matchup.findOneAndUpdate(
         {
           _id: matchupId,
-          battles: { $elemMatch: { _id: updatedData.battleId, chooser: userId } }
+          battles: { $elemMatch: { chooser: userId } }
         },
         {
-          'battles.&.song': updatedData.songId
+          'battles.$.song': updatedData.songId
         },
         { new: true })
 
