@@ -26,8 +26,8 @@ const createEntries = function createEntriesFunc(tournament) {
       const game = games.pop()
       const match = new Matchup()
       match.tournament = tournament._id
-      match.startDate = startDate.add(week, 'weeks')
-      match.endDate = startDate.add(week + 1, 'weeks')
+      match.startDate = startDate.clone().add(week, 'weeks')
+      match.endDate = startDate.clone().add(week + 1, 'weeks')
       match.players = [{
         user: game.player1
       },
