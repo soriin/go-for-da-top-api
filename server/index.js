@@ -83,4 +83,3 @@ app.use(passport.session());
 app.use('/', Routes)
 
 app.listen(process.env.PORT, () => { logger.info(`Server started on : ${process.env.PORT}`) });
-

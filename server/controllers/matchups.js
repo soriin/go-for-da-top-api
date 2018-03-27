@@ -34,6 +34,8 @@ const getMatchupsHandler = [
           'players.user': userId
         })
         .populate('battles.song')
+        .populate({path: 'players.user', select: '_id, displayName'})
+        .populate({path: 'battles.chooser', select: '_id, displayName'})
         .lean()
         .exec()
       

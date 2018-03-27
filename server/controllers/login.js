@@ -12,18 +12,19 @@ const facebookReturnHandler = [
     const dbUser = await User.findOne({ facebookId: req.user.profile.id }).exec()
 
     if (dbUser) {
-      dbUser.accessToken = req.user.accessToken;
+      dbUser.accessToken = req.user.accessToken
       logger.info('updated user', dbUser)
-      await dbUser.save();
+      await dbUser.save()
     } else {
-      let newUser = new User();
-      newUser.accessToken = req.user.accessToken;
-      newUser.facebookId = req.user.profile.id;
-      newUser.realName = req.user.profile.displayName;
+      let newUser = new User()
+      newUser.accessToken = req.user.accessToken
+      newUser.facebookId = req.user.profile.id
+      newUser.realName = req.user.profile.displayName
+      newUser.displayName = req.user.profile.displayName
       logger.info('added new user', req.user)
       await newUser.save()
     }
-    res.redirect(process.env.clientRootUrl);
+    res.redirect(process.env.clientRootUrl)
   }
 ]
 
