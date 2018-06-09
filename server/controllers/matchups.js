@@ -1,6 +1,7 @@
 const Matchup = require('../models/matchup')
 const logger = require('../logging/logger')
 const moment = require('moment')
+const formidable = require('formidable')
 const matchupSvc = require('../services/matchupService')
 const sanitizeSvc = require('../services/sanitizeService')
 
@@ -159,37 +160,47 @@ const unverifyMatchupHandler = [
 ]
 
 const submitEntryMatchupHandler = [
+  function (req, res, next) {
+   const form = new formidable.IncomingForm()
+   form.type = 'urlencoded'
+   form.on('end', function() {
+     
+     next()
+   })
+   form.parse(req, function(err, fields, files) {
+     if (err && err.message) {
+       logger.info('error parsing file', err)
+     }
+     res.locals.files = files
+     res.locals.fields = fields
+   })
+  },
   async function submitEntryMatchupFunc(req, res) {
     try {
       const matchupId = req.params.id
       const userId = res.locals.user._id
-      logger.info(`attempting to submit entry for matchup ${matchupId} as user ${userId}`, req.body)
+      logger.info(`attempting to submit entry for matchup ${matchupId} as user ${userId}`, res.locals)
+      res.send('nope')
+      // const updatedData = sanitizeSvc.sanitize(body, updateableProperties)
+      // updatedData.userId = userId
+      // const updateValue = {}
+      // updateValue[`${userId}`] = updatedData
 
-      const body = req.body
-      const updateableProperties = [
-        'exScore',
-        'imageProofUrl'
-      ]
-      const updatedData = sanitizeSvc.sanitize(body, updateableProperties)
-      updatedData.userId = userId
-      const updateValue = {}
-      updateValue[`${userId}`] = updatedData
+      // const updatedMatchup = await Matchup.findOneAndUpdate(
+      //   { _id: matchupId, 'battles.song': body.song, endDate: { $gte: moment().toDate() } },
+      //   {
+      //     'battles.$.entries': updateValue
+      //   },
+      //   { new: true }
+      // )
+      //   .lean()
+      //   .exec()
 
-      const updatedMatchup = await Matchup.findOneAndUpdate(
-        { _id: matchupId, 'battles.song': body.song, endDate: { $gte: moment().toDate() } },
-        {
-          'battles.$.entries': updateValue
-        },
-        { new: true }
-      )
-        .lean()
-        .exec()
+      // if (!updatedMatchup) {
+      //   return res.status(404).end()
+      // }
 
-      if (!updatedMatchup) {
-        return res.status(404).end()
-      }
-
-      res.send(updatedMatchup)
+      // res.send(updatedMatchup)
     } catch (e) {
       logger.error(e)
       res.status(500).send({ error: 'unable to submit entry for matchup' })

@@ -37,6 +37,7 @@
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
     "express-session": "^1.15.5",
+    "formidable": "^1.2.1",
     "helmet": "^3.8.1",
     "logdna": "^1.4.0",
     "moment": "^2.18.1",

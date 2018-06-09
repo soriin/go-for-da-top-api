@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const mongoose = require('mongoose');
 const Routes = require('./routes/routes')
 const logger = require('./logging/logger')
+const bodyParser = require('body-parser')
 
 mongoose.Promise = global.Promise;
 // Configure the Facebook strategy for use by Passport.
@@ -71,7 +72,7 @@ const corsConfig = {
 // logging, parsing, and session handling.
 app.use(require('morgan')('combined'));
 app.use(require('cookie-parser')());
-app.use(require('body-parser').json());
+app.use(/^(?!.*submission).*$/, bodyParser.json());
 app.use(require('express-session')({ secret: process.env.sessionKey, resave: true, saveUninitialized: true }));
 app.use(cors(corsConfig));
 
