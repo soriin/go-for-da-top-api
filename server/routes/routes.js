@@ -19,7 +19,8 @@ const auth = async function auth(req, res, next) {
         res.locals.user = user;
         next(null);
       } else {
-        next('no user found')
+        res.status(401)
+        next('no user')
       }
     }
   } catch (e) {
