@@ -45,6 +45,10 @@ const updateUserHandler = [
     try {
       const userId = req.params.id
       logger.info(`getting user data for ${userId}`, req.body)
+      if (res.locals.user._id.toString() !== userId) {
+        logger.error('Unauthorized user edit attempted')
+        return res.status(403).send({ error: 'unable to update user data' })
+      }
 
       const validProperties = [
         'displayName',
@@ -62,7 +66,7 @@ const updateUserHandler = [
       res.send(massageUser(user))
     } catch (e) {
       logger.error(e.stack)
-      res.status(500).send({ error: 'unable to retrieve user data' })
+      res.status(500).send({ error: 'unable to update user data' })
     }
   }
 ]

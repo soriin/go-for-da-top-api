@@ -13,7 +13,7 @@ const auth = async function auth(req, res, next) {
     const auth = req.headers['authorization'].split('Bearer ')[1];
     if (auth) {
       res.locals.token = auth;
-      const user = await User.findOne({ accessToken: auth })
+      const user = await User.findOne({ accessToken: auth }).lean()
 
       if (user) {
         res.locals.user = user;
