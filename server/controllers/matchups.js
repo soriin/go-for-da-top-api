@@ -221,6 +221,8 @@ const songSelectionHandler = [
       ]
       const updatedData = sanitizeSvc.sanitize(body, updateableProperties)
 
+      if (!updatedData.songId) return res.status(400).end()
+      
       const updatedMatchup = await Matchup.findOneAndUpdate(
         {
           _id: matchupId,
