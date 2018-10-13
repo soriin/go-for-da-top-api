@@ -41,6 +41,8 @@ const getMatchupsHandler = [
         .exec()
       
       matchups.forEach(m => matchupSvc.sanitizeMatchupScores(m, userId))
+      matchups.forEach(m => matchupSvc.sanitizeMatchupSongs(m, userId))
+
       res.send({ matchups, count: matchups.length })
     } catch (e) {
       logger.error(e.stack)
@@ -222,7 +224,7 @@ const songSelectionHandler = [
       const updatedData = sanitizeSvc.sanitize(body, updateableProperties)
 
       if (!updatedData.songId) return res.status(400).end()
-      
+
       const updatedMatchup = await Matchup.findOneAndUpdate(
         {
           _id: matchupId,

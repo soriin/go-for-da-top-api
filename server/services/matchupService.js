@@ -28,7 +28,31 @@ const sanitizeMatchupScores = function sanitizeMatchupScoresFunc(matchup, userId
   })
 }
 
+const sanitizeMatchupSongs = function sanitizeMatchupSongsFunc(matchup, userId) {
+  if (matchup.verification) return
+
+  if (matchup.battles[0].song && matchup.battles[1].song) return
+
+  const hiddenSong = {
+    artist: '[hidden]',
+    title: '[hidden]',
+    alternateTitle: '[hidden]',
+    bpm: 0,
+    difficulty: '[hidden]',
+    rating: 0,
+    imageUrl: '',
+    isSingles: true
+  }
+  if (matchup.battles[0].chooser._id.toString() !== userId.toString()) {
+    matchup.battles[0].song = hiddenSong
+  }
+  if (matchup.battles[1].chooser._id.toString() !== userId.toString()) {
+    matchup.battles[1].song = hiddenSong
+  }
+}
+
 module.exports = {
   hasAdminPrivs,
   sanitizeMatchupScores,
+  sanitizeMatchupSongs,
 }
