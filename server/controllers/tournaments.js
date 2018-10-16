@@ -204,7 +204,8 @@ const getStandingsHandler = [
         ,{'$group': {_id: '$user', score: {'$sum': '$score'}}}
         ,{'$lookup': { from: 'users', localField: '_id', foreignField: '_id', as: 'user' }}
         ,{'$unwind': '$user'}
-        ,{'$project': {'user.realName': 1, 'score': 1}}
+        ,{'$project': {'displayName': '$user.displayName', 'score': 1}}
+        ,{'$sort': {'score': -1}}
       ])
       .exec()
 
