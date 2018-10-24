@@ -70,15 +70,16 @@ const joinTournamentHandler = [
       const userId = res.locals.user._id
       logger.info(`${userId} joining tournament ${tournamentId}`)
 
-      const result = await Tournament.update(
+      const tournament = await Tournament.findOneAndUpdate(
         { _id: tournamentId, isActive: false },
-        { $addToSet: { entrants: userId } })
+        { $addToSet: { entrants: userId } },
+        { new: true })
         .exec()
-      if (!result.ok) {
+      if (!tournament) {
         logger.info(`${userId} unable to join tournament ${tournamentId}`)
         return res.status(404).end()
       }
-      res.send({ tournamentId, userId })
+      res.send(tournament)
     } catch (e) {
       logger.error(e)
       res.status(500).send({ error: 'unable to join tournament' })
@@ -93,15 +94,16 @@ const leaveTournamentHandler = [
       const userId = res.locals.user._id
       logger.info(`${userId} leaving tournament ${tournamentId}`)
 
-      const result = await Tournament.update(
+      const tournament = await Tournament.findOneAndUpdate(
         { _id: tournamentId, isActive: false },
-        { $pull: { entrants: userId } })
+        { $pull: { entrants: userId } },
+        { new: true })
         .exec()
-      if (!result.ok) {
+      if (!tournament) {
         logger.info(`${userId} unable to leave tournament ${tournamentId}`)
         return res.send({ tournamentId, userId })
       }
-      res.send({ tournamentId, userId })
+      res.send(tournament)
     } catch (e) {
       logger.error(e)
       res.status(500).send({ error: 'unable to leave tournament' })
