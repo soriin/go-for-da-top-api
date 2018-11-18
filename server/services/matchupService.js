@@ -1,5 +1,19 @@
 const Matchup = require('../models/matchup')
 
+const genFakeSong = (fakeType) => {
+  return {
+    artist: `[${fakeType}]`,
+    title: `[${fakeType}]`,
+    alternateTitle: `[${fakeType}]`,
+    bpm: 0,
+    difficulty: `[${fakeType}]`,
+    rating: 0,
+    imageUrl: '',
+    isSingles: true,
+    isHidden: true
+  }
+}
+
 const hasAdminPrivs = async function hasAdminPrivsFunc(matchupId, userId) {
   const matchup = await Matchup
     .findOne({ _id: matchupId })
@@ -33,22 +47,20 @@ const sanitizeMatchupSongs = function sanitizeMatchupSongsFunc(matchup, userId) 
 
   if (matchup.battles[0].song && matchup.battles[1].song) return
 
-  const hiddenSong = {
-    artist: '[hidden]',
-    title: '[hidden]',
-    alternateTitle: '[hidden]',
-    bpm: 0,
-    difficulty: '[hidden]',
-    rating: 0,
-    imageUrl: '',
-    isSingles: true
+  const sanitizeSong = (index) => {
+    if (matchup.battles[index].chooser._id.toString() !== userId.toString()) {
+      let hiddenSongData
+      if (matchup.battles[index].song) {
+        hiddenSongData = genFakeSong('hidden')
+      } else {
+        hiddenSongData = genFakeSong('not chosen, yet')
+      }
+      matchup.battles[index].song = hiddenSongData
+    }
   }
-  if (matchup.battles[0].chooser._id.toString() !== userId.toString()) {
-    matchup.battles[0].song = hiddenSong
-  }
-  if (matchup.battles[1].chooser._id.toString() !== userId.toString()) {
-    matchup.battles[1].song = hiddenSong
-  }
+
+  sanitizeSong(0)
+  sanitizeSong(1)
 }
 
 module.exports = {

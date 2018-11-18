@@ -225,7 +225,7 @@ const songSelectionHandler = [
 
       if (!updatedData.songId) return res.status(400).end()
 
-      const updatedMatchup = await Matchup.findOneAndUpdate(
+      let updatedMatchup = await Matchup.findOneAndUpdate(
         {
           _id: matchupId,
           battles: { $elemMatch: { chooser: userId } }
@@ -234,10 +234,15 @@ const songSelectionHandler = [
           'battles.$.song': updatedData.songId
         },
         { new: true })
+        .populate('battles.song')
+        .populate({path: 'players.user', select: '_id, displayName'})
+        .populate({path: 'battles.chooser', select: '_id, displayName'})
 
       if (!updatedMatchup) {
         return res.status(404).end()
       }
+
+      matchupSvc.sanitizeMatchupSongs(updatedMatchup, userId)
       res.send(updatedMatchup)
     } catch (e) {
       logger.error(e)
