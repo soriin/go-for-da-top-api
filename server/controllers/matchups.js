@@ -237,6 +237,8 @@ const songSelectionHandler = [
         .populate('battles.song')
         .populate({path: 'players.user', select: '_id, displayName'})
         .populate({path: 'battles.chooser', select: '_id, displayName'})
+        .lean()
+        .exec()
 
       if (!updatedMatchup) {
         return res.status(404).end()
