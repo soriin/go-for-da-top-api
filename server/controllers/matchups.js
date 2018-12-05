@@ -35,11 +35,11 @@ const getMatchupsHandler = [
           'players.user': userId
         })
         .populate('battles.song')
-        .populate({path: 'players.user', select: '_id, displayName'})
-        .populate({path: 'battles.chooser', select: '_id, displayName'})
+        .populate({ path: 'players.user', select: '_id, displayName' })
+        .populate({ path: 'battles.chooser', select: '_id, displayName' })
         .lean()
         .exec()
-      
+
       matchups.forEach(m => matchupSvc.sanitizeMatchupScores(m, userId))
       matchups.forEach(m => matchupSvc.sanitizeMatchupSongs(m, userId))
 
@@ -163,46 +163,49 @@ const unverifyMatchupHandler = [
 
 const submitEntryMatchupHandler = [
   function (req, res, next) {
-   const form = new formidable.IncomingForm()
-   form.type = 'urlencoded'
-   form.on('end', function() {
-     
-     next()
-   })
-   form.parse(req, function(err, fields, files) {
-     if (err && err.message) {
-       logger.info('error parsing file', err)
-     }
-     res.locals.files = files
-     res.locals.fields = fields
-   })
+    const form = new formidable.IncomingForm()
+    form.type = 'urlencoded'
+    form.parse(req, function (err, fields, files) {
+      if (err && err.message) {
+        logger.info('error parsing file', err)
+        next(err)
+      }
+      res.locals.files = files
+      res.locals.fields = fields
+      next()
+    })
   },
   async function submitEntryMatchupFunc(req, res) {
     try {
       const matchupId = req.params.id
       const userId = res.locals.user._id
       logger.info(`attempting to submit entry for matchup ${matchupId} as user ${userId}`, res.locals)
-      res.send('nope')
-      // const updatedData = sanitizeSvc.sanitize(body, updateableProperties)
-      // updatedData.userId = userId
-      // const updateValue = {}
-      // updateValue[`${userId}`] = updatedData
+      // Upload file to S3
 
-      // const updatedMatchup = await Matchup.findOneAndUpdate(
-      //   { _id: matchupId, 'battles.song': body.song, endDate: { $gte: moment().toDate() } },
-      //   {
-      //     'battles.$.entries': updateValue
-      //   },
-      //   { new: true }
-      // )
-      //   .lean()
-      //   .exec()
+      // Save S3 url and exscore to matchup/battle
 
-      // if (!updatedMatchup) {
-      //   return res.status(404).end()
-      // }
+      const updateQuery = {}
+      updateQuery[`battles.$.entries.${userId.toString()}`] = {
+        imageProofUrl: '',
+        exScore: res.locals.fields.exScore
+      }
+      const updatedMatchup = await Matchup.findOneAndUpdate(
+        { 
+          _id: matchupId,
+          battles: { $elemMatch: { song: res.locals.fields.song } },
+          endDate: { $gte: moment().toDate() } 
+        },
+        updateQuery,
+        { new: true }
+      )
+        .lean()
+        .exec()
 
-      // res.send(updatedMatchup)
+      if (!updatedMatchup) {
+        return res.status(404).end()
+      }
+
+      res.send(updatedMatchup)
     } catch (e) {
       logger.error(e)
       res.status(500).send({ error: 'unable to submit entry for matchup' })
@@ -235,8 +238,8 @@ const songSelectionHandler = [
         },
         { new: true })
         .populate('battles.song')
-        .populate({path: 'players.user', select: '_id, displayName'})
-        .populate({path: 'battles.chooser', select: '_id, displayName'})
+        .populate({ path: 'players.user', select: '_id, displayName' })
+        .populate({ path: 'battles.chooser', select: '_id, displayName' })
         .lean()
         .exec()
 
