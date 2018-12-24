@@ -36,7 +36,7 @@ const sanitizeMatchupScores = function sanitizeMatchupScoresFunc(matchup, userId
   matchup.battles.forEach(b => {
     if (!b.entries) return
     Object.keys(b.entries).forEach(user => {
-      if (user === userId) return
+      if (user === userId.toString()) return
       b.entries[user] = undefined
     })
   })

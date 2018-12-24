@@ -181,12 +181,12 @@ const submitEntryMatchupHandler = [
       const userId = res.locals.user._id
       logger.info(`attempting to submit entry for matchup ${matchupId} as user ${userId}`, res.locals)
       // Upload file to S3
+      const s3ImageUrl = 'https://s3.us-east-2.amazonaws.com/gfdt-images/staging/turtle.jpg'
 
       // Save S3 url and exscore to matchup/battle
-
       const updateQuery = {}
       updateQuery[`battles.$.entries.${userId.toString()}`] = {
-        imageProofUrl: '',
+        imageProofUrl: s3ImageUrl,
         exScore: res.locals.fields.exScore
       }
       const updatedMatchup = await Matchup.findOneAndUpdate(
