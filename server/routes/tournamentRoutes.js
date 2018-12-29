@@ -4,6 +4,7 @@ const tournamentController = require('../controllers/tournaments')
 router.get('/', ...tournamentController.getTournamentsHandler)
 router.get('/:id/matchups', ...tournamentController.getMatchupsHandler)
 router.get('/:id/standings', ...tournamentController.getStandingsHandler)
+router.get('/:id/verifiablematchups', ...tournamentController.getVerifiableMatchupsHandler)
 
 router.post('/', ...tournamentController.createTournamentHandler)
 router.post('/:id/entrant', ...tournamentController.joinTournamentHandler)

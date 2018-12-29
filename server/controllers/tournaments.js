@@ -193,6 +193,27 @@ const getMatchupsHandler = [
   }
 ]
 
+const getVerifiableMatchupsHandler = [
+  async function getVerifiableMatchupsFunc(req, res) {
+    try {
+      const tournamentId = req.params.id
+      const userId = req.query.userId
+      const dateTimeNow = moment().toDate()
+      logger.info(`getting matchups that need to be verified for tournament ${tournamentId} for user ${userId}`)
+
+      const matchups = await Matchup.find({
+        tournament: tournamentId,
+        'endDate': {'$lt': dateTimeNow}
+      }).lean().exec()
+
+      res.send({ matchups, count: matchups.length })
+    } catch (e) {
+      logger.error(e)
+      res.status(500).send({ error: 'unable to retrieve matchups' })
+    }
+  }
+]
+
 const getStandingsHandler = [
   async function getStandingsFunc(req, res) {
     try {
@@ -229,4 +250,5 @@ module.exports = {
   forceAllJoinHandler,
   getMatchupsHandler,
   getStandingsHandler,
+  getVerifiableMatchupsHandler,
 }

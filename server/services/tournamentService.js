@@ -48,6 +48,18 @@ const createEntries = function createEntriesFunc(tournament) {
   }
 }
 
+const isTournamentOrganizer = async (tournamentId, userId) => {
+  const tournamentCount = await Tournament
+    .count({ _id: tournamentId, organizers: {'$elemMatch': userId} })
+    .exec()
+
+  if (tournamentCount < 1) {
+    return false
+  }
+  return true
+}
+
 module.exports = {
-  createEntries
+  createEntries,
+  isTournamentOrganizer,
 }

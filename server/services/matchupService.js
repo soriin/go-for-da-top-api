@@ -14,7 +14,7 @@ const genFakeSong = (fakeType) => {
   }
 }
 
-const hasAdminPrivs = async function hasAdminPrivsFunc(matchupId, userId) {
+const hasAdminPrivs = async (matchupId, userId) => {
   const matchup = await Matchup
     .findOne({ _id: matchupId })
     .populate({
@@ -30,7 +30,7 @@ const hasAdminPrivs = async function hasAdminPrivsFunc(matchupId, userId) {
   return true
 }
 
-const sanitizeMatchupScores = function sanitizeMatchupScoresFunc(matchup, userId) {
+const sanitizeMatchupScores = (matchup, userId) => {
   if (matchup.verification) return
 
   matchup.battles.forEach(b => {
@@ -42,7 +42,7 @@ const sanitizeMatchupScores = function sanitizeMatchupScoresFunc(matchup, userId
   })
 }
 
-const sanitizeMatchupSongs = function sanitizeMatchupSongsFunc(matchup, userId) {
+const sanitizeMatchupSongs = (matchup, userId) => {
   if (matchup.verification) return
 
   if (matchup.battles[0].song && matchup.battles[1].song) return
